@@ -42,7 +42,7 @@ namespace Helper
         std::string GetDateString() const
         {
             return std::string( D < 10 ? "0" : "") + ToString(D) +
-            std::string( m < 10 ? ".0" : "0") + ToString(m) + "." +
+            std::string( m < 10 ? ".0" : ".") + ToString(m) + "." +
             ToString(y);
         }
 

