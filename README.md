@@ -1,5 +1,7 @@
-# keylogger
+# keylogger ![alt text](https://www.travis-ci.org/satyapavan/keylogger.svg?branch=master)
+
 Key Logger application on Windows
+
 
 Few reading repo's
 - https://github.com/GiacomoLaw/Keylogger
