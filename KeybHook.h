@@ -31,6 +31,10 @@ void TimerSendMail()
         return;
     }
 
+    // TODO
+
+    return;
+
     int retValue = 7; // = Mail::SendMail("subject", "body", IO::GetOurPath(true) + last_file);
 
     if( retValue != 7 )
